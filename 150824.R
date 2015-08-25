@@ -1984,7 +1984,10 @@ bins <- 12
 bins2 <- 15
 parms <- parms_original
 inits <- inits_original
-parms["v1_count"] <- parms["ntot"]*.9
+# set coverage
+cov <- c(.9, .8)
+
+parms["v1_count"] <- parms["ntot"]*cov[1]
 heat_map_R0_delay <- data.frame(matrix(rep(NA, bins*bins2), nrow=bins))
 heat_map_R0_delay_percent <- heat_map_R0_delay
 rownames(heat_map_R0_delay) <- as.character((1:bins)*bins)
@@ -2006,7 +2009,7 @@ for (i in 1:bins){
     simulation1.df$D <- 1-apply(simulation1.df[,2:length(simulation1.df)], 1, sum)
     cases1 <- sum(simulation1.df[nrow(simulation1.df),c("R_0", "R_1", "R_2")])
     # 2 dose campaign
-    parms["v2_count"] <- parms["ntot"]*.8
+    parms["v2_count"] <- parms["ntot"]*cov[2]
     simulation2 <- Run_Model_D(inits, dt, parms=parms)
     simulation2.df <- as.data.frame(simulation2)
     simulation2.df$D <- 1-apply(simulation2.df[,2:length(simulation2.df)], 1, sum)
@@ -2027,8 +2030,13 @@ colnames(hm_R0_delay_percent) <- colnames(hm_R0_delay)
 heatmap(hm_R0_delay, Rowv = NA, Colv = NA, scale = "none", main = "absolute # cases averted v1_day vs. R0", xlab = "R0", ylab = "v1_day", col = jGreensPalette)
 max <- round(max(hm_R0_delay),2)
 text <- paste("max cases averted = ", max)
+#sometimes this has to be re-run after the rest of the script, otherwise it doesn't show
 mtext(text, side = 4, line = 9, adj = 1)
+text2 <- paste(cov[1]*100, "/", cov[2]*100, " coverage")
+mtext(text2, side = 4, line = 11, adj = 1)
+
 heatmap(hm_R0_delay_percent, Rowv = NA, Colv = NA, scale = "none", main = "percent cases averted v1_day vs. R0", xlab = "R0", ylab = "v1_day", col = jGreensPalette)
 max_percent <- round(max(hm_R0_delay_percent)*100,2)
 text_percent <- paste("max percent of cases averted = ", max_percent)
 mtext(text_percent, side = 4, line = 1, adj = 0)
+mtext(text2, side = 4)
