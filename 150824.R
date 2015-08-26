@@ -2126,55 +2126,23 @@ Run_Model_D_nl <- function(inits, dt, parms){
 ################################################
 # Paramaters and inits for Deterministic Model #
 ################################################
-parms = c(u = 0,            # Death rate
-          b = 0,            # Birth rate
-          B0 = 0.5,         # Transmission parameter for a non-vaccinated susceptible person contacting a non-vaccinated infectious person
-          k1 = 0.0,         # Reduction in infectiousness of a once-vaccinated person
-          k2 = 0.0,         # Reduction in infectiousness of a twice-vaccinated person
-          vac1 = 0.5,       # Personal efficacy of one dose of vaccine
-          vac2 = 0.85,      # Personal efficacy of two doses of vaccine
-          r = 1/3,          # Recovery rate (1/days)
-          e = 1/2,          # Incubation (1/days)
-          ntot = 25000,     # Population size
-          v1_day = 50,      # Day of first vaccine dose (If you don't want vaccination, then set this to 100 or whatever your t_final is)
-          v2_day = 64,      # Day of second vaccine dose
-          v1_count = 1000,  # number of vaccines intended for first dose
-          v2_count = 1000)  # number of vaccines intended for second dose 
 
-# save parms for later use
-parms_original <- parms
 
-t_final <- 365
-dt <-seq(from=1, to=t_final, by=1)
-
-inits <- c(S_0=25000-1,
-           S_1=0,
-           S_2=0,
+inits_nl <- c(S_0=25000-1,
            E_0=0,
-           E_1=0,
-           E_2=0,
            I_0=1,
-           I_1=0,
-           I_2=0,
            R_0=0,
-           R_1=0,
-           R_2=0,
            N  =25000)
-inits_original <- inits
+inits_original_nl <- inits_nl
 
 ############################
 # Deterministic Simulation #
 ############################
-parms["ntot"] <- 25000
-parms["B0"] <- .60
-simulation <- Run_Model_D(inits, dt, parms=parms)
+simulation <- Run_Model_D_nl(inits_nl, dt, parms=parms)
 simulation.df <- as.data.frame(simulation)
 simulation.df$D <- 1-apply(simulation.df[,2:length(simulation.df)], 1, sum)
-I_sum <- simulation.df[c("I_0")] + simulation.df[c("I_1")] + simulation.df[c("I_2")]
+I_sum <- simulation.df[c("I_0")]
 peak <- which.max(I_sum[,1])
 #Plot_Compartments(simulation.df)
 Plot_SEIR(simulation.df)
-Rnaught <- parms["B0"]/parms["r"]
-CAR <- sum(simulation.df[nrow(simulation.df), c("R_0", "R_1","R_2")])/parms["ntot"]
-Rnaught
-CAR
+
