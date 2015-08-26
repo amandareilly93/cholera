@@ -2040,3 +2040,9 @@ max_percent <- round(max(hm_R0_delay_percent)*100,2)
 text_percent <- paste("max percent of cases averted = ", max_percent)
 mtext(text_percent, side = 4, line = 1, adj = 0)
 mtext(text2, side = 4)
+
+heatmap.2(hm_R0_delay_percent, Rowv = FALSE, Colv = FALSE, scale = "none", 
+          main = "percent cases averted v1_day vs. R0",
+          xlab = "R0", ylab = "v1_day", col = jGreensPalette,
+          trace="none", dendrogram="none", revC = TRUE)
+
