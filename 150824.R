@@ -259,7 +259,7 @@ Plot_SEIR(trial)
 #######################
 Model_D <- function(t, x, parms){ 
   with(as.list(c(parms,x)),{
-    dS_0    <- -(B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N)
+    dS_0  <- -(B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N)
     dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N)
     dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N)
     dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0
@@ -2046,3 +2046,135 @@ heatmap.2(hm_R0_delay_percent, Rowv = FALSE, Colv = FALSE, scale = "none",
           xlab = "R0", ylab = "v1_day", col = jGreensPalette,
           trace="none", dendrogram="none", revC = TRUE)
 
+
+#######################
+# Leaky vs. Non-Leaky #
+#######################
+
+# create non-leaky model, Model_D_nl
+Model_D_nl <- function(t, x, parms){ 
+  with(as.list(c(parms,x)),{
+    dS_0  <- -(B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N)
+    dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0
+    dI_0  <- e*E_0 - r*I_0
+    dR_0  <- r*I_0
+    dN    <- 0
+    der   <- c(dS_0, dE_0, dI_0, dR_0, dN)
+    list(der) #output
+  })
+}
+
+# Vaccination conditions for deterministic model 
+Run_Model_D_nl <- function(inits, dt, parms){  
+  ########No vaccine
+  if (parms["v1_count"] == 0 && parms["v2_count"] == 0){
+    simulation <- data.frame(lsoda(inits, dt, Model_D, parms=parms))
+  } else if (parms["v2_count"] == 0){   
+    ########Vaccinate with one dose only
+    dt_0 <- dt[dt < parms["v1_day"]]
+    dt_1 <- dt[dt >= parms["v1_day"]]
+    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
+    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "E_0", "I_0", "R_0", "N")])
+    
+    ## 150826 Stopped editing here, need to continue ##
+    
+    #Update inits by vaccinating
+    if (segment_1_inits[1] < parms["v1_count"]){  #If you don't have enough S_0 to vaccinate
+      segment_1_inits[2] <- segment_1_inits[1]
+      segment_1_inits[1] <- 0
+    } else {
+      segment_1_inits[2] <- parms["v1_count"]
+      segment_1_inits[1] <- segment_1_inits[1] - parms["v1_count"]
+    }
+    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
+    simulation <- rbind(segment_0, segment_1)
+  } else {
+    ########Vaccinate with two doses
+    dt_0 <- dt[dt <  parms["v1_day"]]
+    dt_1 <- dt[dt >= parms["v1_day"] & dt < parms["v2_day"]]
+    dt_2 <- dt[dt >= parms["v2_day"]]
+    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
+    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "E_0", "E_1", "E_2", "I_0", "I_1", "I_2", "R_0", "R_1", "R_2","N")])
+    #Update inits by vaccinating
+    if (segment_1_inits[1] < parms["v1_count"]){  #If you don't have enough S_1 to vaccinate
+      segment_1_inits[2] <- segment_1_inits[1]
+      segment_1_inits[1] <- 0
+    } else {
+      segment_1_inits[2] <- parms["v1_count"]
+      segment_1_inits[1] <- segment_1_inits[1] - parms["v1_count"]
+    }
+    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
+    segment_2_inits <- unlist(segment_1[nrow(segment_1),c("S_0", "S_1", "S_2", "E_0", "E_1", "E_2", "I_0", "I_1", "I_2", "R_0", "R_1", "R_2","N")])
+    #Update inits by vaccinating again
+    if (segment_2_inits[2] < parms["v2_count"]){  #If you don't have enough S_1 to vaccinate
+      S1_to_S2 = segment_2_inits[2]                               ## If you do have leftover vaccines
+      count_extra = parms["v2_count"] - S1_to_S2
+      S0_to_S1 = min(count_extra, segment_2_inits[1])
+      segment_2_inits[3] <- S1_to_S2
+      segment_2_inits[2] <- segment_2_inits[2] - S1_to_S2 + S0_to_S1
+      segment_2_inits[1] <- segment_2_inits[1] - S0_to_S1
+    } else {     # You do have enough S_1 to vaccinate again
+      segment_2_inits[3] <- parms["v2_count"]
+      segment_2_inits[2] <- segment_2_inits[2] - parms["v2_count"]
+    }      
+    segment_2 <- data.frame(lsoda(segment_2_inits,dt_2, Model_D, parms=parms))
+    simulation <- rbind(segment_0, segment_1)
+    simulation <- rbind(simulation, segment_2)
+  }
+}
+
+################################################
+# Paramaters and inits for Deterministic Model #
+################################################
+parms = c(u = 0,            # Death rate
+          b = 0,            # Birth rate
+          B0 = 0.5,         # Transmission parameter for a non-vaccinated susceptible person contacting a non-vaccinated infectious person
+          k1 = 0.0,         # Reduction in infectiousness of a once-vaccinated person
+          k2 = 0.0,         # Reduction in infectiousness of a twice-vaccinated person
+          vac1 = 0.5,       # Personal efficacy of one dose of vaccine
+          vac2 = 0.85,      # Personal efficacy of two doses of vaccine
+          r = 1/3,          # Recovery rate (1/days)
+          e = 1/2,          # Incubation (1/days)
+          ntot = 25000,     # Population size
+          v1_day = 50,      # Day of first vaccine dose (If you don't want vaccination, then set this to 100 or whatever your t_final is)
+          v2_day = 64,      # Day of second vaccine dose
+          v1_count = 1000,  # number of vaccines intended for first dose
+          v2_count = 1000)  # number of vaccines intended for second dose 
+
+# save parms for later use
+parms_original <- parms
+
+t_final <- 365
+dt <-seq(from=1, to=t_final, by=1)
+
+inits <- c(S_0=25000-1,
+           S_1=0,
+           S_2=0,
+           E_0=0,
+           E_1=0,
+           E_2=0,
+           I_0=1,
+           I_1=0,
+           I_2=0,
+           R_0=0,
+           R_1=0,
+           R_2=0,
+           N  =25000)
+inits_original <- inits
+
+############################
+# Deterministic Simulation #
+############################
+parms["ntot"] <- 25000
+parms["B0"] <- .60
+simulation <- Run_Model_D(inits, dt, parms=parms)
+simulation.df <- as.data.frame(simulation)
+simulation.df$D <- 1-apply(simulation.df[,2:length(simulation.df)], 1, sum)
+I_sum <- simulation.df[c("I_0")] + simulation.df[c("I_1")] + simulation.df[c("I_2")]
+peak <- which.max(I_sum[,1])
+#Plot_Compartments(simulation.df)
+Plot_SEIR(simulation.df)
+Rnaught <- parms["B0"]/parms["r"]
+CAR <- sum(simulation.df[nrow(simulation.df), c("R_0", "R_1","R_2")])/parms["ntot"]
+Rnaught
+CAR
