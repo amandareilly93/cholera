@@ -338,8 +338,8 @@ Run_Model_D <- function(inits, dt, parms){
 ################################################
 # Paramaters and inits for Deterministic Model #
 ################################################
-parms = c(u = 0,            # Death rate
-          b = 0,            # Birth rate
+parms = c(u = 1/60,         # Death rate
+          b = 1/60,         # Birth rate
           B0 = 0.5,         # Transmission parameter for a non-vaccinated susceptible person contacting a non-vaccinated infectious person
           k1 = 0.0,         # Reduction in infectiousness of a once-vaccinated person
           k2 = 0.0,         # Reduction in infectiousness of a twice-vaccinated person
