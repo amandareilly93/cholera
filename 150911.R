@@ -259,18 +259,18 @@ Plot_SEIR(trial)
 #######################
 Model_D <- function(t, x, parms){ 
   with(as.list(c(parms,x)),{
-    dS_0  <- -(B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N)
-    dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N)
-    dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N)
-    dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0
-    dE_1  <- (1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - e*E_1
-    dE_2  <- (1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - e*E_2
-    dI_0  <- e*E_0 - r*I_0
-    dI_1  <- e*E_1 - r*I_1
-    dI_2  <- e*E_2 - r*I_2
-    dR_0  <- r*I_0
-    dR_1  <- r*I_1
-    dR_2  <- r*I_2
+    dS_0  <- b*N-(B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N)-u*S_0
+    dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N)-u*S_1
+    dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N)-u*S_2
+    dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0-u*E_0
+    dE_1  <- (1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - e*E_1-u*E_1
+    dE_2  <- (1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - e*E_2-u*E_2
+    dI_0  <- e*E_0 - r*I_0-u*I_0
+    dI_1  <- e*E_1 - r*I_1-u*I_1
+    dI_2  <- e*E_2 - r*I_2-u*I_2
+    dR_0  <- r*I_0-u*R_0
+    dR_1  <- r*I_1-u*R_1
+    dR_2  <- r*I_2-u*R_2
     dN    <- 0
     der   <- c(dS_0, dS_1, dS_2, dE_0, dE_1, dE_2, dI_0, dI_1, dI_2, dR_0, dR_1, dR_2, dN)
     list(der) #output
@@ -338,8 +338,8 @@ Run_Model_D <- function(inits, dt, parms){
 ################################################
 # Paramaters and inits for Deterministic Model #
 ################################################
-parms = c(u = 1/60,         # Death rate
-          b = 1/60,         # Birth rate
+parms = c(u = 1/(60*365),   # Death rate (1/days)
+          b = 1/(60*365),   # Birth rate (1/days)
           B0 = 0.5,         # Transmission parameter for a non-vaccinated susceptible person contacting a non-vaccinated infectious person
           k1 = 0.0,         # Reduction in infectiousness of a once-vaccinated person
           k2 = 0.0,         # Reduction in infectiousness of a twice-vaccinated person
