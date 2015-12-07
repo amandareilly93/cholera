@@ -259,18 +259,18 @@ Plot_SEIR(trial)
 #######################
 Model_D <- function(t, x, parms){ 
   with(as.list(c(parms,x)),{
-    dS_0  <- b*N-(B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N)-u*S_0
-    dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N)-u*S_1
-    dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N)-u*S_2
-    dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0-u*E_0
-    dE_1  <- (1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - e*E_1-u*E_1
-    dE_2  <- (1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - e*E_2-u*E_2
-    dI_0  <- e*E_0 - r*I_0-u*I_0
-    dI_1  <- e*E_1 - r*I_1-u*I_1
-    dI_2  <- e*E_2 - r*I_2-u*I_2
-    dR_0  <- r*I_0-u*R_0
-    dR_1  <- r*I_1-u*R_1
-    dR_2  <- r*I_2-u*R_2
+    dS_0  <- b*N + m*N -(B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - u*S_0 - m*S_0
+    dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - u*S_1 - m*S_1
+    dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - u*S_2 - m*S_2
+    dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0 - u*E_0 - m*E_0
+    dE_1  <- (1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - e*E_1 - u*E_1 - m*E_1
+    dE_2  <- (1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - e*E_2 - u*E_2 - m*E_2
+    dI_0  <- e*E_0 - r*I_0 - u*I_0 - m*I_0
+    dI_1  <- e*E_1 - r*I_1 - u*I_1 - m*I_1
+    dI_2  <- e*E_2 - r*I_2 - u*I_2 - m*I_2
+    dR_0  <- r*I_0 - u*R_0 - m*R_0
+    dR_1  <- r*I_1 - u*R_1 - m*R_1
+    dR_2  <- r*I_2 - u*R_2 - m*R_2
     dN    <- 0
     der   <- c(dS_0, dS_1, dS_2, dE_0, dE_1, dE_2, dI_0, dI_1, dI_2, dR_0, dR_1, dR_2, dN)
     list(der) #output
@@ -351,7 +351,8 @@ parms = c(u = 1/(60*365),   # Death rate (1/days)
           v1_day = 50,      # Day of first vaccine dose (If you don't want vaccination, then set this to 100 or whatever your t_final is)
           v2_day = 64,      # Day of second vaccine dose
           v1_count = 1000,  # number of vaccines intended for first dose
-          v2_count = 1000)  # number of vaccines intended for second dose 
+          v2_count = 1000,  # number of vaccines intended for second dose
+          m = .25/365)      # migration rate (same for immigration and emigration)
 
 # save parms for later use
 parms_original <- parms
