@@ -36,9 +36,9 @@ Plot_Compartments <- function(trial){
 # SEIR compiled #
 Plot_SEIR <- function(trial){
   ggplot(data=trial, aes(x=time)) +
-    geom_line(aes(x=time, y=(S_0 + S_1 + S_2)), col="blue") +
-    geom_line(aes(x=time, y=(I_0 + I_1 + I_2)), col="red") +
-    geom_line(aes(x=time, y=(R_0 + R_1 + R_2)), col="green") +
+    geom_line(aes(x=time, y=(S_0 + S_1 + S_2 + S_3 + S_4 + S_5 + S_6)), col="blue") +
+    geom_line(aes(x=time, y=(I_0 + I_1 + I_2 + I_3 + I_4 + I_5 + I_6)), col="red") +
+    geom_line(aes(x=time, y=(R_0 + R_1 + R_2 + R_3 + R_4 + R_5 + R_6)), col="green") +
     theme_bw() + ylab("Count") + ggtitle("SEIR")
 }
 # Plot_SEIR(trial)
@@ -380,18 +380,31 @@ dt <-seq(from=1, to=t_final, by=1)
 inits <- c(S_0=25000-1,
            S_1=0,
            S_2=0,
-           E_0=0,
-           E_1=0,
-           E_2=0,
-           I_0=1,
-           I_1=0,
-           I_2=0,
-           R_0=0,
-           R_1=0,
-           R_2=0,
            S_3=0,
            S_4=0,
            S_5=0,
+           S_6=0,
+           E_0=0,
+           E_1=0,
+           E_2=0,
+           E_3=0,
+           E_4=0,
+           E_5=0,
+           E_6=0,
+           I_0=1,
+           I_1=0,
+           I_2=0,
+           I_3=0,
+           I_4=0,
+           I_5=0,
+           I_6=0,
+           R_0=0,
+           R_1=0,
+           R_2=0,
+           R_3=0,
+           R_4=0,
+           R_5=0,
+           R_6=0,
            N  =25000)
 inits_original <- inits
 
