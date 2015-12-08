@@ -36,10 +36,19 @@ Plot_Compartments <- function(trial){
 # SEIR compiled #
 Plot_SEIR <- function(trial){
   ggplot(data=trial, aes(x=time)) +
+    geom_line(aes(x=time, y=(S_0 + S_1 + S_2)), col="blue") +
+    geom_line(aes(x=time, y=(I_0 + I_1 + I_2)), col="red") +
+    geom_line(aes(x=time, y=(R_0 + R_1 + R_2)), col="green") +
+    theme_bw() + ylab("Count") + ggtitle("SEIR")
+}
+  
+# SEIR compiled #
+Plot_SEIR_W <- function(trial){
+  ggplot(data=trial, aes(x=time)) +
     geom_line(aes(x=time, y=(S_0 + S_1 + S_2 + S_3 + S_4 + S_5 + S_6)), col="blue") +
     geom_line(aes(x=time, y=(I_0 + I_1 + I_2 + I_3 + I_4 + I_5 + I_6)), col="red") +
     geom_line(aes(x=time, y=(R_0 + R_1 + R_2 + R_3 + R_4 + R_5 + R_6)), col="green") +
-    theme_bw() + ylab("Count") + ggtitle("SEIR")
+    theme_bw() + ylab("Count") + ggtitle("SEIR with waning")
 }
 # Plot_SEIR(trial)
 # Plot_SEIR(simulation.df)
@@ -254,10 +263,134 @@ trial <- Run_Model_S(par=par, inits=inits, campaign=1)
 Plot_Compartments(trial)
 Plot_SEIR(trial)
 
+### NO WANING ####################################################################################
 #######################
 # Deterministic Model #
 #######################
 Model_D <- function(t, x, parms){ 
+  with(as.list(c(parms,x)),{
+    dS_0  <- b*N + m*N -(B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - u*S_0 - m*S_0
+    dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - u*S_1 - m*S_1
+    dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - u*S_2 - m*S_2
+    dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0 - u*E_0 - m*E_0
+    dE_1  <- (1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - e*E_1 - u*E_1 - m*E_1
+    dE_2  <- (1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - e*E_2 - u*E_2 - m*E_2
+    dI_0  <- e*E_0 - r*I_0 - u*I_0 - m*I_0
+    dI_1  <- e*E_1 - r*I_1 - u*I_1 - m*I_1
+    dI_2  <- e*E_2 - r*I_2 - u*I_2 - m*I_2
+    dR_0  <- r*I_0 - u*R_0 - m*R_0
+    dR_1  <- r*I_1 - u*R_1 - m*R_1
+    dR_2  <- r*I_2 - u*R_2 - m*R_2
+    dN    <- 0
+    der   <- c(dS_0, dS_1, dS_2, dE_0, dE_1, dE_2, dI_0, dI_1, dI_2, dR_0, dR_1, dR_2, dN)
+    list(der) #output
+  })
+}
+
+##################################################
+# Vaccination conditions for deterministic model #
+##################################################
+Run_Model_D <- function(inits, dt, parms){  
+  ########No vaccine
+  if (parms["v1_count"] == 0 && parms["v2_count"] == 0){
+    simulation <- data.frame(lsoda(inits, dt, Model_D, parms=parms))
+  } else if (parms["v2_count"] == 0){   
+    ########Vaccinate with one dose only
+    dt_0 <- dt[dt < parms["v1_day"]]
+    dt_1 <- dt[dt >= parms["v1_day"]]
+    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
+    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "E_0", "E_1", "E_2", "I_0", "I_1", "I_2", "R_0", "R_1", "R_2","N")])
+    #Update inits by vaccinating
+    if (segment_1_inits[1] < parms["v1_count"]){  #If you don't have enough S_0 to vaccinate
+      segment_1_inits[2] <- segment_1_inits[1]
+      segment_1_inits[1] <- 0
+    } else {
+      segment_1_inits[2] <- parms["v1_count"]
+      segment_1_inits[1] <- segment_1_inits[1] - parms["v1_count"]
+    }
+    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
+    simulation <- rbind(segment_0, segment_1)
+  } else {
+    ########Vaccinate with two doses
+    dt_0 <- dt[dt <  parms["v1_day"]]
+    dt_1 <- dt[dt >= parms["v1_day"] & dt < parms["v2_day"]]
+    dt_2 <- dt[dt >= parms["v2_day"]]
+    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
+    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "E_0", "E_1", "E_2", "I_0", "I_1", "I_2", "R_0", "R_1", "R_2","N")])
+    #Update inits by vaccinating
+    if (segment_1_inits[1] < parms["v1_count"]){  #If you don't have enough S_1 to vaccinate
+      segment_1_inits[2] <- segment_1_inits[1]
+      segment_1_inits[1] <- 0
+    } else {
+      segment_1_inits[2] <- parms["v1_count"]
+      segment_1_inits[1] <- segment_1_inits[1] - parms["v1_count"]
+    }
+    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
+    segment_2_inits <- unlist(segment_1[nrow(segment_1),c("S_0", "S_1", "S_2", "E_0", "E_1", "E_2", "I_0", "I_1", "I_2", "R_0", "R_1", "R_2","N")])
+    #Update inits by vaccinating again
+    if (segment_2_inits[2] < parms["v2_count"]){  #If you don't have enough S_1 to vaccinate
+      S1_to_S2 = segment_2_inits[2]                               ## If you do have leftover vaccines
+      count_extra = parms["v2_count"] - S1_to_S2
+      S0_to_S1 = min(count_extra, segment_2_inits[1])
+      segment_2_inits[3] <- S1_to_S2
+      segment_2_inits[2] <- segment_2_inits[2] - S1_to_S2 + S0_to_S1
+      segment_2_inits[1] <- segment_2_inits[1] - S0_to_S1
+    } else {     # You do have enough S_1 to vaccinate again
+      segment_2_inits[3] <- parms["v2_count"]
+      segment_2_inits[2] <- segment_2_inits[2] - parms["v2_count"]
+    }      
+    segment_2 <- data.frame(lsoda(segment_2_inits,dt_2, Model_D, parms=parms))
+    simulation <- rbind(segment_0, segment_1)
+    simulation <- rbind(simulation, segment_2)
+  }
+}
+
+################################################
+# Paramaters and inits for Deterministic Model #
+################################################
+parms = c(u = 1/(60*365),   # Death rate (1/days)
+          b = 1/(60*365),   # Birth rate (1/days)
+          B0 = 0.5,         # Transmission parameter for a non-vaccinated susceptible person contacting a non-vaccinated infectious person
+          k1 = 0.0,         # Reduction in infectiousness of a once-vaccinated person
+          k2 = 0.0,         # Reduction in infectiousness of a twice-vaccinated person
+          vac1 = 0.5,       # Personal efficacy of one dose of vaccine
+          vac2 = 0.85,      # Personal efficacy of two doses of vaccine
+          r = 1/3,          # Recovery rate (1/days)
+          e = 1/2,          # Incubation (1/days)
+          ntot = 25000,     # Population size
+          v1_day = 50,      # Day of first vaccine dose (If you don't want vaccination, then set this to 100 or whatever your t_final is)
+          v2_day = 64,      # Day of second vaccine dose
+          v1_count = 1000,  # number of vaccines intended for first dose
+          v2_count = 1000,  # number of vaccines intended for second dose
+          m = .10/365)      # migration rate (same for immigration and emigration)
+
+# save parms for later use
+parms_original <- parms
+
+t_final <- 365
+dt <-seq(from=1, to=t_final, by=1)
+
+inits <- c(S_0=25000-1,
+           S_1=0,
+           S_2=0,
+           E_0=0,
+           E_1=0,
+           E_2=0,
+           I_0=1,
+           I_1=0,
+           I_2=0,
+           R_0=0,
+           R_1=0,
+           R_2=0,
+           N  =25000)
+inits_original <- inits
+
+
+### LINEAR WANING ################################################################################
+#######################
+# Deterministic Model #
+#######################
+Model_D_w <- function(t, x, parms){ 
   with(as.list(c(parms,x)),{
     dS_0  <- b*N+m*N - (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N + B0*S_0*I_3/N + B0*S_0*I_4/N + B0*S_0*I_5/N + B0*S_0*I_6/N) - u*S_0 - m*S_0 
     dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N + B0*S_1*I_3/N + B0*S_1*I_4/N + B0*S_1*I_5/N + B0*S_1*I_6/N) - u*S_1 - m*S_1 + w*S_6
@@ -296,7 +429,7 @@ Model_D <- function(t, x, parms){
 ##################################################
 # Vaccination conditions for deterministic model #
 ##################################################
-Run_Model_D <- function(inits, dt, parms){  
+Run_Model_D_w <- function(inits, dt, parms){  
   ########No vaccine
   if (parms["v1_count"] == 0 && parms["v2_count"] == 0){
     simulation <- data.frame(lsoda(inits, dt, Model_D, parms=parms))
@@ -372,7 +505,7 @@ parms = c(u = 1/(60*365),   # Death rate (1/days)
           w = 1/365)        # waning vaccine efficacy (move down a category every year)
 
 # save parms for later use
-parms_original <- parms
+parms_original_w <- parms
 
 t_final <- 365
 dt <-seq(from=1, to=t_final, by=1)
@@ -406,7 +539,7 @@ inits <- c(S_0=25000-1,
            R_5=0,
            R_6=0,
            N  =25000)
-inits_original <- inits
+inits_original_w <- inits
 
 ############################
 # Deterministic Simulation #
@@ -2157,9 +2290,15 @@ ggplot(data=cases_per_day,aes(x=time)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
   ggtitle("Cases per day")
 
-#############################
-# Waning Vaccine Protection #
-#############################
+#################
+# Linear Waning #
+#################
+
+t_final <- 365*6
+
+#########################################
+# Migration & Waning Vaccine Protection #
+#########################################
 
 t_final <- 365*6
 step <- 6
