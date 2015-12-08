@@ -357,61 +357,6 @@ Run_Model_D <- function(inits, dt, parms){
     simulation <- rbind(segment_0, segment_1)
     simulation <- rbind(simulation, segment_2)
   }
-  if(t_final>365){   
-    dt_0 <- dt[dt < 365]
-    dt_1 <- dt[dt >= 365]
-    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
-    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "S_3", "S_4", "S_5", "S_6", "E_0", "E_1", "E_2", "E_3", "E_4", "E_5", "E_6", "I_0", "I_1", "I_2", "I_3", "I_4", "I_5", "I_6", "R_0", "R_1", "R_2", "R_3", "R_4", "R_5", "R_6","N")])
-    #Update inits by vaccinating
-    segment_1_inits[13] <- segment_1_inits[13] + 1
-    segment_1_inits[1] <- segment_1_inits[1] - 1
-    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
-    simulation <- rbind(segment_0, segment_1)
-  } 
-  if(t_final>(365*2)){   
-    dt_0 <- dt[dt < 365*2]
-    dt_1 <- dt[dt >= 365*2]
-    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
-    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "S_3", "S_4", "S_5", "S_6", "E_0", "E_1", "E_2", "E_3", "E_4", "E_5", "E_6", "I_0", "I_1", "I_2", "I_3", "I_4", "I_5", "I_6", "R_0", "R_1", "R_2", "R_3", "R_4", "R_5", "R_6","N")])
-    #Update inits by vaccinating
-    segment_1_inits[13] <- segment_1_inits[13] + 1
-    segment_1_inits[1] <- segment_1_inits[1] - 1
-    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
-    simulation <- rbind(segment_0, segment_1)
-  } 
-  if(t_final>(365*3)){   
-    dt_0 <- dt[dt < 365*3]
-    dt_1 <- dt[dt >= 365*3]
-    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
-    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "S_3", "S_4", "S_5", "S_6", "E_0", "E_1", "E_2", "E_3", "E_4", "E_5", "E_6", "I_0", "I_1", "I_2", "I_3", "I_4", "I_5", "I_6", "R_0", "R_1", "R_2", "R_3", "R_4", "R_5", "R_6","N")])
-    #Update inits by vaccinating
-    segment_1_inits[13] <- segment_1_inits[13] + 1
-    segment_1_inits[1] <- segment_1_inits[1] - 1
-    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
-    simulation <- rbind(segment_0, segment_1)
-  } 
-  if(t_final>(365*4)){   
-    dt_0 <- dt[dt < 365*4]
-    dt_1 <- dt[dt >= 365*4]
-    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
-    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "S_3", "S_4", "S_5", "S_6", "E_0", "E_1", "E_2", "E_3", "E_4", "E_5", "E_6", "I_0", "I_1", "I_2", "I_3", "I_4", "I_5", "I_6", "R_0", "R_1", "R_2", "R_3", "R_4", "R_5", "R_6","N")])
-    #Update inits by vaccinating
-    segment_1_inits[13] <- segment_1_inits[13] + 1
-    segment_1_inits[1] <- segment_1_inits[1] - 1
-    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
-    simulation <- rbind(segment_0, segment_1)
-  } 
-  if(t_final>(365*5)){   
-    dt_0 <- dt[dt < 365*5]
-    dt_1 <- dt[dt >= 365*5]
-    segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
-    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "S_3", "S_4", "S_5", "S_6", "E_0", "E_1", "E_2", "E_3", "E_4", "E_5", "E_6", "I_0", "I_1", "I_2", "I_3", "I_4", "I_5", "I_6", "R_0", "R_1", "R_2", "R_3", "R_4", "R_5", "R_6","N")])
-    #Update inits by vaccinating
-    segment_1_inits[13] <- segment_1_inits[13] + 1
-    segment_1_inits[1] <- segment_1_inits[1] - 1
-    segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
-    simulation <- rbind(segment_0, segment_1)
-  } 
 }
 
 ################################################
@@ -2149,6 +2094,7 @@ heatmap.2(hm_R0_delay_percent, Rowv = FALSE, Colv = FALSE, scale = "none",
 #######################
 # Leaky vs. Non-Leaky #
 #######################
+
 
 ###############################
 # Epidemic Size, vac efficacy #
