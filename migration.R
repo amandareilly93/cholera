@@ -357,6 +357,8 @@ Run_Model_D <- function(inits, dt, parms){
     simulation <- rbind(segment_0, segment_1)
     simulation <- rbind(simulation, segment_2)
   }
+  ## this is where it gets shady
+  ## fix me!
   if(t_final>365){   
     dt_0 <- dt[dt < 365]
     dt_1 <- dt[dt >= 365]

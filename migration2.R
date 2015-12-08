@@ -267,14 +267,14 @@ Plot_SEIR(trial)
 #######################
 Model_D <- function(t, x, parms){ 
   with(as.list(c(parms,x)),{
-    dS_0  <- b*N+m*N - (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N + B0*S_0*I_3/N + B0*S_0*I_4/N + B0*S_0*I_5/N + B0*S_0*I_6/N) - u*S_0 - m*S_0 
+    dS_0  <- b*N+m*N - (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N + B0*S_0*I_3/N + B0*S_0*I_4/N + B0*S_0*I_5/N + B0*S_0*I_6/N) - u*S_0 - m*S_0 - 1/365*S_0
     dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N + B0*S_1*I_3/N + B0*S_1*I_4/N + B0*S_1*I_5/N + B0*S_1*I_6/N) - u*S_1 - m*S_1 + w*S_6
     dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N + B0*S_2*I_3/N + B0*S_2*I_4/N + B0*S_2*I_5/N + B0*S_2*I_6/N) - u*S_2 - m*S_2 - w*S_2
     dS_3  <- -(1-(4*(vac2-vac1)/5+vac1))*(B0*S_3*I_0/N + (1-k1)*B0*S_3*I_1/N + (1-k2)*B0*S_3*I_2/N + B0*S_3*I_3/N + B0*S_3*I_4/N + B0*S_3*I_5/N + B0*S_3*I_6/N) - u*S_3 - m*S_3 + w*S_2 - w*S_3 
     dS_4  <- -(1-(3*(vac2-vac1)/5+vac1))*(B0*S_4*I_0/N + (1-k1)*B0*S_4*I_1/N + (1-k2)*B0*S_4*I_2/N + B0*S_4*I_3/N + B0*S_4*I_4/N + B0*S_4*I_5/N + B0*S_4*I_6/N) - u*S_4 - m*S_4 + w*S_3 - w*S_4
     dS_5  <- -(1-(2*(vac2-vac1)/5+vac1))*(B0*S_5*I_0/N + (1-k1)*B0*S_5*I_1/N + (1-k2)*B0*S_5*I_2/N + B0*S_5*I_3/N + B0*S_5*I_4/N + B0*S_5*I_5/N + B0*S_5*I_6/N) - u*S_5 - m*S_5 + w*S_4 - w*S_5
     dS_6  <- -(1-(1*(vac2-vac1)/5+vac1))*(B0*S_6*I_0/N + (1-k1)*B0*S_6*I_1/N + (1-k2)*B0*S_6*I_2/N + B0*S_6*I_3/N + B0*S_6*I_4/N + B0*S_6*I_5/N + B0*S_6*I_6/N) - u*S_6 - m*S_6 + w*S_5 - w*S_6
-    dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0 - u*E_0 - m*E_0
+    dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0 - u*E_0 - m*E_0 + 1/365*S_0
     dE_1  <- (1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - e*E_1 - u*E_1 - m*E_1
     dE_2  <- (1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - e*E_2 - u*E_2 - m*E_2
     dE_3  <- (1-(4*(vac2-vac1)/5+vac1))*(B0*S_3*I_0/N + (1-k1)*B0*S_3*I_1/N + (1-k2)*B0*S_3*I_2/N + B0*S_3*I_3/N + B0*S_3*I_4/N + B0*S_3*I_5/N + B0*S_3*I_6/N) - e*E_3 - u*E_3 - m*E_3
@@ -2165,31 +2165,39 @@ ggplot(data=cases_per_day,aes(x=time)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
   ggtitle("Cases per day")
 
-#################
-# Linear Waning #
-#################
-
-t_final <- 365*6
-
 #########################################
 # Migration & Waning Vaccine Protection #
 #########################################
 
 t_final <- 365*6
 step <- 6
-size <- data.frame(matrix(c(rep(0,3*step)),step))
-colnames(size) <- c("migration", "recovered","RE")
+parms <- parms_original
+parms["w"] <- 100/365
+w <- parms["w"]
+size <- data.frame(matrix(c(rep(0,5*step)),step))
+colnames(size) <- c("migration", "recovered_w","RE_w", "recovered_nw", "RE_nw")
 for (i in 1:step){
   parms["m"] <- .05*(i-1)/365
   size[i,1] <- parms["m"]*365
+  # with waning
+  parms["w"] <- w
   simulation <- Run_Model_D(inits, dt, parms=parms)
   simulation.df <- as.data.frame(simulation)
   simulation.df$D <- 1-apply(simulation.df[,2:length(simulation.df)], 1, sum)
   size[i,2] <- sum(simulation.df[nrow(simulation.df), c("R_0", "R_1","R_2","R_3","R_4","R_5","R_6")])
   size[i,3] <- (size[i,2]/parms["ntot"])*(parms["B0"]/parms["r"])
+  # without waning
+  parms["w"] <- 0
+  simulation1 <- Run_Model_D(inits, dt, parms=parms)
+  simulation1.df <- as.data.frame(simulation1)
+  simulation1.df$D <- 1-apply(simulation1.df[,2:length(simulation1.df)], 1, sum)
+  size[i,4] <- sum(simulation1.df[nrow(simulation1.df), c("R_0", "R_1","R_2","R_3","R_4","R_5","R_6")])
+  size[i,5] <- (size[i,4]/parms["ntot"])*(parms["B0"]/parms["r"])
 }
 ggplot(data = size, aes(x="migration")) + 
-  geom_line(aes(x=migration, y=recovered), col="green") 
+  geom_line(aes(x=migration, y=recovered_w), col="green") +
+  geom_line(aes(x=migration, y=recovered_nw), col="blue")
 
 ggplot(data = size, aes(x="migration")) + 
-  geom_line(aes(x=migration, y=RE), col="blue")
+  geom_line(aes(x=migration, y=RE_w), col="green") + 
+  geom_line(aes(x=migration, y=RE_nw), col="blue")
