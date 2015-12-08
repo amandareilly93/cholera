@@ -260,12 +260,12 @@ Plot_SEIR(trial)
 Model_D <- function(t, x, parms){ 
   with(as.list(c(parms,x)),{
     dS_0  <- b*N+m*N - (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N + B0*S_0*I_3/N + B0*S_0*I_4/N + B0*S_0*I_5/N + B0*S_0*I_6/N) - u*S_0 - m*S_0 
-    dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N + B0*S_1*I_3/N + B0*S_1*I_4/N + B0*S_1*I_5/N + B0*S_1*I_6/N) - u*S_1 - m*S_1 + w*dS_6
-    dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N + B0*S_2*I_3/N + B0*S_2*I_4/N + B0*S_2*I_5/N + B0*S_2*I_6/N) - u*S_2 - m*S_2 - w*dS_2
-    dS_3  <- -(1-(4*(vac2-vac1)/5+vac1))*(B0*S_3*I_0/N + (1-k1)*B0*S_3*I_1/N + (1-k2)*B0*S_3*I_2/N + B0*S_3*I_3/N + B0*S_3*I_4/N + B0*S_3*I_5/N + B0*S_3*I_6/N) - u*S_3 - m*S_3 + w*dS_2 - w*dS_3 
-    dS_4  <- -(1-(3*(vac2-vac1)/5+vac1))*(B0*S_4*I_0/N + (1-k1)*B0*S_4*I_1/N + (1-k2)*B0*S_4*I_2/N + B0*S_4*I_3/N + B0*S_4*I_4/N + B0*S_4*I_5/N + B0*S_4*I_6/N) - u*S_4 - m*S_4 + w*dS_3 - w*dS_4
-    dS_5  <- -(1-(2*(vac2-vac1)/5+vac1))*(B0*S_5*I_0/N + (1-k1)*B0*S_5*I_1/N + (1-k2)*B0*S_5*I_2/N + B0*S_5*I_3/N + B0*S_5*I_4/N + B0*S_5*I_5/N + B0*S_5*I_6/N) - u*S_5 - m*S_5 + w*dS_4 - w*dS_5
-    dS_6  <- -(1-(1*(vac2-vac1)/5+vac1))*(B0*S_6*I_0/N + (1-k1)*B0*S_6*I_1/N + (1-k2)*B0*S_6*I_2/N + B0*S_6*I_3/N + B0*S_6*I_4/N + B0*S_6*I_5/N + B0*S_6*I_6/N) - u*S_6 - m*S_6 + w*dS_5 - w*dS_6
+    dS_1  <- -(1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N + B0*S_1*I_3/N + B0*S_1*I_4/N + B0*S_1*I_5/N + B0*S_1*I_6/N) - u*S_1 - m*S_1 + w*S_6
+    dS_2  <- -(1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N + B0*S_2*I_3/N + B0*S_2*I_4/N + B0*S_2*I_5/N + B0*S_2*I_6/N) - u*S_2 - m*S_2 - w*S_2
+    dS_3  <- -(1-(4*(vac2-vac1)/5+vac1))*(B0*S_3*I_0/N + (1-k1)*B0*S_3*I_1/N + (1-k2)*B0*S_3*I_2/N + B0*S_3*I_3/N + B0*S_3*I_4/N + B0*S_3*I_5/N + B0*S_3*I_6/N) - u*S_3 - m*S_3 + w*S_2 - w*S_3 
+    dS_4  <- -(1-(3*(vac2-vac1)/5+vac1))*(B0*S_4*I_0/N + (1-k1)*B0*S_4*I_1/N + (1-k2)*B0*S_4*I_2/N + B0*S_4*I_3/N + B0*S_4*I_4/N + B0*S_4*I_5/N + B0*S_4*I_6/N) - u*S_4 - m*S_4 + w*S_3 - w*S_4
+    dS_5  <- -(1-(2*(vac2-vac1)/5+vac1))*(B0*S_5*I_0/N + (1-k1)*B0*S_5*I_1/N + (1-k2)*B0*S_5*I_2/N + B0*S_5*I_3/N + B0*S_5*I_4/N + B0*S_5*I_5/N + B0*S_5*I_6/N) - u*S_5 - m*S_5 + w*S_4 - w*S_5
+    dS_6  <- -(1-(1*(vac2-vac1)/5+vac1))*(B0*S_6*I_0/N + (1-k1)*B0*S_6*I_1/N + (1-k2)*B0*S_6*I_2/N + B0*S_6*I_3/N + B0*S_6*I_4/N + B0*S_6*I_5/N + B0*S_6*I_6/N) - u*S_6 - m*S_6 + w*S_5 - w*S_6
     dE_0  <- (B0*S_0*I_0/N + (1-k1)*B0*S_0*I_1/N + (1-k2)*B0*S_0*I_2/N) - e*E_0 - u*E_0 - m*E_0
     dE_1  <- (1-vac1)*(B0*S_1*I_0/N + (1-k1)*B0*S_1*I_1/N + (1-k2)*B0*S_1*I_2/N) - e*E_1 - u*E_1 - m*E_1
     dE_2  <- (1-vac2)*(B0*S_2*I_0/N + (1-k1)*B0*S_2*I_1/N + (1-k2)*B0*S_2*I_2/N) - e*E_2 - u*E_2 - m*E_2
@@ -305,7 +305,7 @@ Run_Model_D <- function(inits, dt, parms){
     dt_0 <- dt[dt < parms["v1_day"]]
     dt_1 <- dt[dt >= parms["v1_day"]]
     segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
-    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "E_0", "E_1", "E_2", "I_0", "I_1", "I_2", "R_0", "R_1", "R_2","N")])
+    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "S_3", "S_4", "S_5", "S_6", "E_0", "E_1", "E_2", "E_3", "E_4", "E_5", "E_6", "I_0", "I_1", "I_2", "I_3", "I_4", "I_5", "I_6", "R_0", "R_1", "R_2", "R_3", "R_4", "R_5", "R_6","N")])
     #Update inits by vaccinating
     if (segment_1_inits[1] < parms["v1_count"]){  #If you don't have enough S_0 to vaccinate
       segment_1_inits[2] <- segment_1_inits[1]
@@ -322,7 +322,7 @@ Run_Model_D <- function(inits, dt, parms){
     dt_1 <- dt[dt >= parms["v1_day"] & dt < parms["v2_day"]]
     dt_2 <- dt[dt >= parms["v2_day"]]
     segment_0 <- data.frame(lsoda(inits, dt_0, Model_D, parms=parms))
-    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "E_0", "E_1", "E_2", "I_0", "I_1", "I_2", "R_0", "R_1", "R_2","N")])
+    segment_1_inits <- unlist(segment_0[nrow(segment_0),c("S_0", "S_1", "S_2", "S_3", "S_4", "S_5", "S_6", "E_0", "E_1", "E_2", "E_3", "E_4", "E_5", "E_6", "I_0", "I_1", "I_2", "I_3", "I_4", "I_5", "I_6", "R_0", "R_1", "R_2", "R_3", "R_4", "R_5", "R_6","N")])
     #Update inits by vaccinating
     if (segment_1_inits[1] < parms["v1_count"]){  #If you don't have enough S_1 to vaccinate
       segment_1_inits[2] <- segment_1_inits[1]
@@ -332,7 +332,7 @@ Run_Model_D <- function(inits, dt, parms){
       segment_1_inits[1] <- segment_1_inits[1] - parms["v1_count"]
     }
     segment_1 <- data.frame(lsoda(segment_1_inits,dt_1, Model_D, parms=parms))
-    segment_2_inits <- unlist(segment_1[nrow(segment_1),c("S_0", "S_1", "S_2", "E_0", "E_1", "E_2", "I_0", "I_1", "I_2", "R_0", "R_1", "R_2","N")])
+    segment_2_inits <- unlist(segment_1[nrow(segment_1),c("S_0", "S_1", "S_2", "S_3", "S_4", "S_5", "S_6", "E_0", "E_1", "E_2", "E_3", "E_4", "E_5", "E_6", "I_0", "I_1", "I_2", "I_3", "I_4", "I_5", "I_6", "R_0", "R_1", "R_2", "R_3", "R_4", "R_5", "R_6","N")])
     #Update inits by vaccinating again
     if (segment_2_inits[2] < parms["v2_count"]){  #If you don't have enough S_1 to vaccinate
       S1_to_S2 = segment_2_inits[2]                               ## If you do have leftover vaccines
@@ -413,6 +413,7 @@ inits_original <- inits
 ############################
 parms["ntot"] <- 25000
 parms["B0"] <- .60
+parms["m"] <- .25/365
 simulation <- Run_Model_D(inits, dt, parms=parms)
 simulation.df <- as.data.frame(simulation)
 simulation.df$D <- 1-apply(simulation.df[,2:length(simulation.df)], 1, sum)
@@ -2160,6 +2161,17 @@ ggplot(data=cases_per_day,aes(x=time)) +
 # Waning Vaccine Protection #
 #############################
 
-# plot 6 years of cases
 t_final <- 365*6
-#
+step <- 6
+size <- data.frame(matrix(c(rep(0,2*step)),step))
+colnames(size) <- c("migration", "recovered")
+for (i in 1:step){
+  parms["m"] <- .05*(i-1)/365
+  size[i,1] <- parms["m"]*365
+  simulation <- Run_Model_D(inits, dt, parms=parms)
+  simulation.df <- as.data.frame(simulation)
+  simulation.df$D <- 1-apply(simulation.df[,2:length(simulation.df)], 1, sum)
+  size[i,2] <- sum(simulation.df[nrow(simulation.df), c("R_0", "R_1","R_2","R_3","R_4","R_5","R_6")])
+}
+ggplot(data = size, aes(x="migration")) + 
+  geom_line(aes(x=migration, y=recovered), col="green")
